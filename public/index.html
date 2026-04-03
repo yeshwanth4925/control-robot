@@ -1,1 +1,49 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>ESP8266 Dashboard</title>
+  <style>
+    body { font-family: Arial; padding: 20px; }
+    .sensor { margin-bottom: 10px; font-size: 18px; }
+    button { padding: 10px; margin: 5px; }
+  </style>
+</head>
+<body>
+  <h2>ESP8266 All-in-One Dashboard</h2>
+  <div class="sensor" id="temp">Temperature: -- °C</div>
+  <div class="sensor" id="hum">Humidity: -- %</div>
+  <div class="sensor" id="ir">IR: --</div>
+  <div class="sensor" id="soil">Soil Moisture: -- %</div>
+  <div class="sensor" id="pump">Pump: --</div>
 
+  <button onclick="controlPump('on')">Turn Pump ON</button>
+  <button onclick="controlPump('off')">Turn Pump OFF</button>
+
+<script>
+const ESP_IP = "192.168.1.100"; // Replace with your ESP8266 local IP
+
+async function fetchData() {
+  try {
+    const res = await fetch(`http://${ESP_IP}/data`);
+    const data = await res.json();
+    document.getElementById("temp").innerText = `Temperature: ${data.temperature} °C`;
+    document.getElementById("hum").innerText = `Humidity: ${data.humidity} %`;
+    document.getElementById("ir").innerText = `IR: ${data.ir==0?"Obstacle":"Clear"}`;
+    document.getElementById("soil").innerText = `Soil Moisture: ${data.soil} %`;
+    document.getElementById("pump").innerText = `Pump: ${data.pump==1?"ON":"OFF"}`;
+  } catch(err) {
+    console.log("Error fetching data", err);
+  }
+}
+
+// Control pump
+function controlPump(action){
+  fetch(`http://${ESP_IP}/pump/${action}`).then(res=>res.text()).then(alert);
+}
+
+// Auto-refresh every 5 seconds
+setInterval(fetchData, 5000);
+fetchData();
+</script>
+</body>
+</html>
